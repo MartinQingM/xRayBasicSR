@@ -1,9 +1,10 @@
+# TODO
 # general settings
-name: 001_ESRGAN_x4_f64b23_SmallSyntheticXray_400k_B16G1_051pretrain_wandb
-model_type: ESRGANModel
+name: 201_RCANx2_scratch_DIV2K_rand0
+model_type: SRModel
 scale: 4
 num_gpu: 1  # set num_gpu: 0 for cpu mode
-manual_seed: 0
+manual_seed: 10
 
 # dataset and data loader settings
 datasets:
@@ -14,14 +15,14 @@ datasets:
     dataroot_lq: datasets/SmallSyntheticXray/LRx4Bicubic
     # (for lmdb)
     # dataroot_gt: datasets/DIV2K/DIV2K_train_HR_sub.lmdb
-    # dataroot_lq: datasets/DIV2K/DIV2K_train_LR_bicubic_X4_sub.lmdb
+    # dataroot_lq: datasets/DIV2K/DIV2K_train_LR_bicubic_X2_sub.lmdb
     filename_tmpl: '{}'
     io_backend:
       type: disk
       # (for lmdb)
       # type: lmdb
 
-    gt_size: 128
+    gt_size: 96
     use_flip: true
     use_rot: true
 
@@ -42,20 +43,21 @@ datasets:
 
 # network structures
 network_g:
-  type: RRDBNet
+  type: RCAN
   num_in_ch: 3
   num_out_ch: 3
   num_feat: 64
-  num_block: 23
-
-network_d:
-  type: VGGStyleDiscriminator128
-  num_in_ch: 3
-  num_feat: 64
+  num_group: 10
+  num_block: 20
+  squeeze_factor: 16
+  upscale: 4
+  res_scale: 1
+  img_range: 255.
+  rgb_mean: [0.4488, 0.4371, 0.4040]
 
 # path
 path:
-  pretrain_network_g: experiments/pretrained_models/ESRGAN/ESRGAN_PSNR_SRx4_DF2K_official-150ff491.pth
+  pretrain_network_g: ~
   strict_load_g: true
   resume_state: ~
 
@@ -66,54 +68,30 @@ train:
     lr: !!float 1e-4
     weight_decay: 0
     betas: [0.9, 0.99]
-  optim_d:
-    type: Adam
-    lr: !!float 1e-4
-    weight_decay: 0
-    betas: [0.9, 0.99]
 
   scheduler:
     type: MultiStepLR
-    milestones: [50000, 100000, 200000, 300000]
+    milestones: [200000]
     gamma: 0.5
 
-  total_iter: 400000
+  total_iter: 300000
   warmup_iter: -1  # no warm up
 
   # losses
   pixel_opt:
     type: L1Loss
-    loss_weight: !!float 1e-2
+    loss_weight: 1.0
     reduction: mean
-  perceptual_opt:
-    type: PerceptualLoss
-    layer_weights:
-      'conv5_4': 1  # before relu
-    vgg_type: vgg19
-    use_input_norm: true
-    range_norm: false
-    perceptual_weight: 1.0
-    style_weight: 0
-    criterion: l1
-  gan_opt:
-    type: GANLoss
-    gan_type: vanilla
-    real_label_val: 1.0
-    fake_label_val: 0.0
-    loss_weight: !!float 5e-3
-
-  net_d_iters: 1
-  net_d_init_iters: 0
 
 # validation settings
 val:
   val_freq: !!float 5e3
-  save_img: true
+  save_img: false
 
   metrics:
     psnr: # metric name, can be arbitrary
       type: calculate_psnr
-      crop_border: 4
+      crop_border: 2
       test_y_channel: false
 
 # logging settings
