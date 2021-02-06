@@ -1,5 +1,5 @@
 name: RCAN_BIX4_xRay_Test-official
-suffix: ~  # add suffix to saved images
+suffix: By4  # add suffix to saved images
 model_type: SRModel
 scale: 4
 crop_border: ~  # crop border when evaluation. If None, crop the scale pixels
@@ -51,3 +51,8 @@ save_img: true
 path:
   pretrain_network_g: ./experiments/201_RCANx2_scratch_DIV2K_rand0/models/net_g_70000.pth
   strict_load_g: true
+
+# validation settings
+val:
+  save_img: true
+  suffix: _By4  # add suffix to saved images, if None, use exp name
