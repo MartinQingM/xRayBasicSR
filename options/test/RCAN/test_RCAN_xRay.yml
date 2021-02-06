@@ -1,0 +1,58 @@
+name: RCAN_BIX4_xRay_Test-official
+suffix: By4  # add suffix to saved images
+model_type: SRModel
+scale: 4
+crop_border: ~  # crop border when evaluation. If None, crop the scale pixels
+num_gpu: 1  # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+datasets:
+  test_1:  # the 1st test dataset
+    name: SmallSyntheticXray_Test
+    type: PairedImageDataset
+    dataroot_gt: datasets/SmallSyntheticXray_Test/GT
+    dataroot_lq: datasets/SmallSyntheticXray_Test/input
+    io_backend:
+      type: disk
+  # test_2:  # the 2st test dataset
+  #   name: val_set14
+  #   type: PairedImageDataset
+  #   dataroot_gt: ./datasets/val_set14/Set14
+  #   dataroot_lq: ./datasets/val_set14/Set14_bicLRx4
+  #   io_backend:
+  #     type: disk
+
+  # test_3:
+  #   name: div2k100
+  #   type: PairedImageDataset
+  #   dataroot_gt: ./datasets/DIV2K100/DIV2K_valid_HR
+  #   dataroot_lq: ./datasets/DIV2K100/DIV2K_valid_bicLRx4
+  #   filename_tmpl: '{}x4'
+  #   io_backend:
+  #     type: disk
+
+# network structures
+network_g:
+  type: RCAN
+  num_in_ch: 3
+  num_out_ch: 3
+  num_feat: 64
+  num_group: 10
+  num_block: 20
+  squeeze_factor: 16
+  upscale: 4
+  res_scale: 1
+  img_range: 255.
+  rgb_mean: [0.4488, 0.4371, 0.4040]
+
+save_img: true
+
+# path
+path:
+  pretrain_network_g: ./experiments/201_RCANx2_scratch_DIV2K_rand0/models/net_g_70000.pth
+  strict_load_g: true
+
+# validation settings
+val:
+  save_img: true
+  suffix: _By4  # add suffix to saved images, if None, use exp name
